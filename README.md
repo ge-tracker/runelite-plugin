@@ -20,4 +20,4 @@ Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recen
 
 ## License
 
-The BSD 2-Clause "Simplified" License (MIT). Please see [License File](LICENSE) for more information.
+The BSD 2-Clause "Simplified" License. Please see [License File](LICENSE) for more information.
