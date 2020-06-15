@@ -1,7 +1,6 @@
 package com.getracker;
 
 import com.google.inject.Provides;
-import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -12,42 +11,40 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
+import javax.inject.Inject;
+
 @Slf4j
 @PluginDescriptor(
-	name = "GE-Tracker.com Integration"
+        name = "GE-Tracker.com Integration"
 )
-public class GeTrackerIntegrationPlugin extends Plugin
-{
-	@Inject
-	private Client client;
+public class GeTrackerIntegrationPlugin extends Plugin {
+    public static final String CONFIG_GROUP = "getracker";
 
-	@Inject
-	private GeTrackerIntegrationConfig config;
+    @Inject
+    private Client client;
 
-	@Override
-	protected void startUp() throws Exception
-	{
-		log.info("Example started!");
-	}
+    @Inject
+    private GeTrackerIntegrationConfig config;
 
-	@Override
-	protected void shutDown() throws Exception
-	{
-		log.info("Example stopped!");
-	}
+    @Override
+    protected void startUp() throws Exception {
+        log.info("Example started!");
+    }
 
-	@Subscribe
-	public void onGameStateChanged(GameStateChanged gameStateChanged)
-	{
-		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
-		{
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Example says " + config.greeting(), null);
-		}
-	}
+    @Override
+    protected void shutDown() throws Exception {
+        log.info("Example stopped!");
+    }
 
-	@Provides
-	GeTrackerIntegrationConfig provideConfig(ConfigManager configManager)
-	{
-		return configManager.getConfig(GeTrackerIntegrationConfig.class);
-	}
+    @Subscribe
+    public void onGameStateChanged(GameStateChanged gameStateChanged) {
+        if (gameStateChanged.getGameState() == GameState.LOGGED_IN) {
+            client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Example says hello", null);
+        }
+    }
+
+    @Provides
+    GeTrackerIntegrationConfig provideConfig(ConfigManager configManager) {
+        return configManager.getConfig(GeTrackerIntegrationConfig.class);
+    }
 }
