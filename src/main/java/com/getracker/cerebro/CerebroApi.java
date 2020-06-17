@@ -6,6 +6,8 @@ import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.http.api.RuneLiteAPI;
 import static net.runelite.http.api.RuneLiteAPI.JSON;
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -15,8 +17,9 @@ import okhttp3.Response;
 public class CerebroApi
 {
 	//	private final String API_URL = "https://staging-test.cerebrohub.io/api/";
+//	private final String CLIENT_ID = "61834a65-6326-486c-a7a5-ddadbb99005a";
 	private final String API_URL = "http://cerebro.local/api/";
-	private final String CLIENT_ID = "eafb7280-e9eb-45f0-9b1c-596bb5633ba4";
+	private final String CLIENT_ID = "60e0ce7b-443c-4173-a17d-45f2be4148d9";
 
 	private static final String CEREBRO_CLIENT = "X-CEREBRO-CLIENT-ID";
 	private static final String CEREBRO_SESSION = "X-CEREBRO-SESSION-ID";
@@ -45,45 +48,19 @@ public class CerebroApi
 	 */
 	public boolean logTransaction(Transaction transaction)
 	{
-		Gson gson = new Gson();
-		System.out.println("Make API request");
-		System.out.println(gson.toJson(transaction));
-
-		Response response = makeApiRequest("POST", "transaction", transaction);
-
-		return response != null;
+		makeApiRequest("POST", "transaction", transaction);
+		return true;
 	}
 
-	/**
-	 * Create a new session UUID
-	 */
-	public void createSession()
-	{
-//		Response response = makeApiRequest("POST", "session");
-//		CreateSessionResponse sessionResponse = CerebroApi.gson.fromJson(response.body().string(), CreateSessionResponse.class);
-//
-//		// TODO: This should be written to config
-//		sessionId = sessionResponse.getSessionId();
-	}
-
-	private Response makeApiRequest(String method, String endpoint)
-	{
-		return this.makeApiRequest(method, endpoint, null);
-	}
-
-	/**
-	 * @param method   Http verb
-	 * @param endpoint Endpoint to request
-	 * @param body     (optional) POST data to send with request
-	 */
-	private Response makeApiRequest(String method, String endpoint, Object body)
+	private Request buildRequest(String method, String endpoint, Object body)
 	{
 		String endpointUrl = API_URL + endpoint;
 
 		Request.Builder builder = new Request.Builder()
 			.header("Content-Type", "application/json")
 			.url(HttpUrl.parse(endpointUrl))
-			.header(CerebroApi.CEREBRO_CLIENT, CLIENT_ID);
+			.header(CerebroApi.CEREBRO_CLIENT, CLIENT_ID)
+			.header("X-CLIENT-IP", "1.1.1.1");
 
 		if (CerebroApi.sessionId != null)
 		{
@@ -106,23 +83,40 @@ public class CerebroApi
 			builder.method(method, null);
 		}
 
+		return builder.build();
+	}
+
+	/**
+	 * @param method   Http verb
+	 * @param endpoint Endpoint to request
+	 * @param body     (optional) POST data to send with request
+	 */
+	private void makeApiRequest(String method, String endpoint, Object body)
+	{
+		// Build HTTP request
+		final Request request = buildRequest(method, endpoint, body);
+
 		// Make API request
-		try
+		RuneLiteAPI.CLIENT.newCall(request).enqueue(new Callback()
 		{
-			Response response = RuneLiteAPI.CLIENT.newCall(builder.build()).execute();
-
-			if (response.isSuccessful())
+			@Override
+			public void onFailure(Call call, IOException e)
 			{
-				return response;
+				log.error("Encountered an error when connecting to the API");
+				e.printStackTrace();
 			}
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
 
-		log.error("Failed making Cerebro API request");
-		return null;
+			@Override
+			public void onResponse(Call call, Response response) throws IOException
+			{
+				log.debug("GE transaction logged");
+			}
+		});
+	}
+
+	private void makeApiRequest(String method, String endpoint)
+	{
+		this.makeApiRequest(method, endpoint, null);
 	}
 
 	public void setRsn(String rsn)
