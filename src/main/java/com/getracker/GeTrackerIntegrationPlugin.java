@@ -1,6 +1,7 @@
 package com.getracker;
 
 import com.getracker.cerebro.CerebroApi;
+import com.getracker.cerebro.SessionManager;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,16 @@ public class GeTrackerIntegrationPlugin extends Plugin
 	private TransactionStateManager transactionStateManager;
 
 	@Inject
+	private SessionManager sessionManager;
+
+	@Inject
 	private CerebroApi api;
+
+	@Override
+	protected void startUp() throws Exception
+	{
+		api.setSession(sessionManager.loadSession());
+	}
 
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged gameStateChanged)

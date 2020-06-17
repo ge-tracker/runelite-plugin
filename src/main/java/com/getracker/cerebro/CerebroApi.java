@@ -3,6 +3,7 @@ package com.getracker.cerebro;
 import com.getracker.Transaction;
 import com.google.gson.Gson;
 import java.io.IOException;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.http.api.RuneLiteAPI;
 import static net.runelite.http.api.RuneLiteAPI.JSON;
@@ -16,8 +17,9 @@ import okhttp3.Response;
 @Slf4j
 public class CerebroApi
 {
-	//	private final String API_URL = "https://staging-test.cerebrohub.io/api/";
+//	private final String API_URL = "https://staging-test.cerebrohub.io/api/";
 //	private final String CLIENT_ID = "61834a65-6326-486c-a7a5-ddadbb99005a";
+
 	private final String API_URL = "http://cerebro.local/api/";
 	private final String CLIENT_ID = "60e0ce7b-443c-4173-a17d-45f2be4148d9";
 
@@ -25,21 +27,12 @@ public class CerebroApi
 	private static final String CEREBRO_SESSION = "X-CEREBRO-SESSION-ID";
 	private static final String CEREBRO_RSN = "X-CEREBRO-RSN";
 
-	private String rsn;
-
-	private static String sessionId;
 	private static final Gson gson = new Gson();
 
-	static
-	{
-		// TODO: Load `sessionId` from config
-		//   if no sessionId, then use machine ID
-		//   if we use machine ID, this should be written to config
+	private String rsn;
 
-
-		MachineUuid machineUuid = new MachineUuid();
-		sessionId = machineUuid.getMachineUuid();
-	}
+	@Setter
+	private CerebroSession session;
 
 	/**
 	 * Log a transaction with Cerebro
@@ -62,9 +55,9 @@ public class CerebroApi
 			.header(CerebroApi.CEREBRO_CLIENT, CLIENT_ID)
 			.header("X-CLIENT-IP", "1.1.1.1");
 
-		if (CerebroApi.sessionId != null)
+		if (session != null)
 		{
-			builder.header(CerebroApi.CEREBRO_SESSION, CerebroApi.sessionId);
+			builder.header(CerebroApi.CEREBRO_SESSION, session.getSessionId());
 		}
 
 		if (rsn != null)
@@ -110,6 +103,7 @@ public class CerebroApi
 			public void onResponse(Call call, Response response) throws IOException
 			{
 				log.debug("GE transaction logged");
+				response.close();
 			}
 		});
 	}
