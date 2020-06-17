@@ -2,55 +2,33 @@ package com.getracker;
 
 import com.google.gson.Gson;
 import java.io.Serializable;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 import net.runelite.api.GrandExchangeOffer;
 import net.runelite.api.GrandExchangeOfferState;
 
-@RequiredArgsConstructor
+@Data
 public class Transaction implements Serializable
 {
-	@Getter
-	private final int itemId;
-
-	@Getter
-	private final int date;
-
-	@Getter
-	private final int price;
-
-	@Getter
-	private final int qty;
-
-	@Getter
-	private final boolean buying;
+	private int itemId;
+	private int date;
+	private int price;
+	private int qty;
+	private boolean buying;
 
 	public static Transaction fromOffer(GrandExchangeOffer offer)
 	{
 		final GrandExchangeOfferState state = offer.getState();
 		final boolean buying = state == GrandExchangeOfferState.BUYING || state == GrandExchangeOfferState.BOUGHT;
+		final int price = offer.getSpent() / offer.getQuantitySold();
 
-		return new Transaction(
-			offer.getItemId(),
-			0,
-			offer.getPrice(),
-			offer.getTotalQuantity(),
-			buying
-		);
-	}
+		Transaction transaction = new Transaction();
+		transaction.setItemId(offer.getItemId());
+		transaction.setDate(0);
+		transaction.setPrice(price);
+		transaction.setQty(offer.getTotalQuantity());
+		transaction.setBuying(buying);
 
-	/**
-	 * Returns `true` if the transaction is in a completed state
-	 *
-	 * @return boolean
-	 */
-	public static boolean complete(GrandExchangeOffer offer)
-	{
-		GrandExchangeOfferState state = offer.getState();
-		return state == GrandExchangeOfferState.BOUGHT
-			|| state == GrandExchangeOfferState.SOLD
-			|| state == GrandExchangeOfferState.CANCELLED_BUY
-			|| state == GrandExchangeOfferState.CANCELLED_SELL;
+		return transaction;
 	}
 
 	public String toString()

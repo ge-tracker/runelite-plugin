@@ -1,6 +1,7 @@
 package com.getracker;
 
 import javax.inject.Inject;
+import lombok.Getter;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.GrandExchangeOffer;
@@ -16,20 +17,33 @@ public class TransactionStateManager
 	@Inject
 	private ConfigManager configManager;
 
+	private GrandExchangeOffer offer;
+	private GrandExchangeOfferState state;
+	private SavedOffer savedOffer;
+
+	@Getter
+	private int qty;
+
+	@Getter
+	private int dSpent;
+
 	private static final String GROUP_NAME = "gestate";
+
+	public TransactionStateManager with(int slot, GrandExchangeOffer offer)
+	{
+		this.offer = offer;
+		this.state = offer.getState();
+		this.savedOffer = getOffer(slot);
+		return this;
+	}
 
 	/**
 	 * Decides the state of the transaction. States are taken from RuneLite's GrandExchangePlugin
 	 *
-	 * @param slot  Slot number
-	 * @param offer Grand exchange offer
 	 * @return State of the transaction
 	 */
-	public TransactionState getState(int slot, GrandExchangeOffer offer)
+	public TransactionState getState()
 	{
-		final GrandExchangeOfferState state = offer.getState();
-		final SavedOffer savedOffer = getOffer(slot);
-
 		if (offer.getItemId() == 0 || (state == GrandExchangeOfferState.EMPTY && client.getGameState() != GameState.LOGGED_IN))
 		{
 			return TransactionState.SKIP;
@@ -55,10 +69,11 @@ public class TransactionStateManager
 			return TransactionState.CANCELLED;
 		}
 
-		final int qty = offer.getQuantitySold() - savedOffer.getQuantitySold();
-		final int dspent = offer.getSpent() - savedOffer.getSpent();
+		// Calculate the difference in the amount sold since the transaction was last cached
+		qty = offer.getQuantitySold() - savedOffer.getQuantitySold();
+		dSpent = offer.getSpent() - savedOffer.getSpent();
 
-		if (qty <= 0 || dspent <= 0)
+		if (qty <= 0 || dSpent <= 0)
 		{
 			return TransactionState.COMPLETED;
 		}

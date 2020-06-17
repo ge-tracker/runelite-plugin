@@ -18,7 +18,13 @@ public class CerebroApiTest
 	@Test
 	public void canRequestCerebroApi()
 	{
-		Transaction transaction = new Transaction(13576, 1592310541, 55000000, 3, true);
+		Transaction transaction = new Transaction();
+		transaction.setItemId(13576);
+		transaction.setDate(1592310541);
+		transaction.setPrice(55000000);
+		transaction.setQty(3);
+		transaction.setBuying(true);
+
 		assertTrue(api.logTransaction(transaction));
 	}
 }

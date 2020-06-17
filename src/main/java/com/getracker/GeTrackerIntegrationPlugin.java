@@ -61,9 +61,7 @@ public class GeTrackerIntegrationPlugin extends Plugin
 		final int slot = offerEvent.getSlot();
 		final GrandExchangeOffer offer = offerEvent.getOffer();
 		final GrandExchangeOfferState state = offer.getState();
-		final TransactionState txnState = transactionStateManager.getState(slot, offer);
-
-		System.out.println(String.format("Slot: %s - %s - %s %sx%s (%s)", offer.getItemId(), slot, state.toString(), offer.getSpent(), offer.getQuantitySold(), offer.getTotalQuantity()));
+		final TransactionState txnState = transactionStateManager.with(slot, offer).getState();
 
 		if (txnState == TransactionState.SKIP)
 		{
@@ -72,13 +70,14 @@ public class GeTrackerIntegrationPlugin extends Plugin
 
 		transactionStateManager.updateConfig(slot, offer);
 
-		Transaction transaction = Transaction.fromOffer(offer);
-		System.out.println(String.format("Slot: %s - %s %sx%s (%s)", slot, state.toString(), offer.getSpent(), offer.getQuantitySold(), offer.getTotalQuantity()));
-		System.out.println(transaction);
-		System.out.println(txnState.toString());
-		System.out.println("---");
+		if (txnState == TransactionState.UPDATED)
+		{
+			Transaction transaction = Transaction.fromOffer(offer);
+			transaction.setQty(transactionStateManager.getQty());
+			transaction.setPrice(transactionStateManager.getDSpent() / transactionStateManager.getQty());
 
-//		api.logTransaction(transaction);
+			api.logTransaction(transaction);
+		}
 	}
 
 	/**
@@ -90,11 +89,9 @@ public class GeTrackerIntegrationPlugin extends Plugin
 	 */
 	private void onLoggedInGameState()
 	{
-		//keep scheduling this task until it returns true (when we have access to a display name)
+		// Wait until a username is available
 		clientThread.invokeLater(() ->
 		{
-			//we return true in this case as something went wrong and somehow the state isn't logged in, so we don't
-			//want to keep scheduling this task.
 			if (client.getGameState() != GameState.LOGGED_IN)
 			{
 				return true;
@@ -102,8 +99,6 @@ public class GeTrackerIntegrationPlugin extends Plugin
 
 			final Player player = client.getLocalPlayer();
 
-			//player is null, so we can't get the display name so, return false, which will schedule
-			//the task on the client thread again.
 			if (player == null)
 			{
 				return false;
