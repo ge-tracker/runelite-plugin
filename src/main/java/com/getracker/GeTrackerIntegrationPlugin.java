@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.GrandExchangeOffer;
 import net.runelite.api.GrandExchangeOfferState;
 import net.runelite.api.Player;
 import net.runelite.api.events.GameStateChanged;
@@ -34,6 +35,9 @@ public class GeTrackerIntegrationPlugin extends Plugin
 	private GeTrackerIntegrationConfig config;
 
 	@Inject
+	private TransactionStateManager transactionStateManager;
+
+	@Inject
 	private CerebroApi api;
 
 	@Subscribe
@@ -52,27 +56,29 @@ public class GeTrackerIntegrationPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onGrandExchangeOfferChanged(GrandExchangeOfferChanged newOfferEvent)
+	public void onGrandExchangeOfferChanged(GrandExchangeOfferChanged offerEvent)
 	{
-		GrandExchangeOfferState state = newOfferEvent.getOffer().getState();
+		final int slot = offerEvent.getSlot();
+		final GrandExchangeOffer offer = offerEvent.getOffer();
+		final GrandExchangeOfferState state = offer.getState();
+		final TransactionState txnState = transactionStateManager.getState(slot, offer);
 
-		// Ignore the game's initialisation when logging in
-		if (client.getGameState() != GameState.LOGGED_IN || state == GrandExchangeOfferState.EMPTY)
+		System.out.println(String.format("Slot: %s - %s - %s %sx%s (%s)", offer.getItemId(), slot, state.toString(), offer.getSpent(), offer.getQuantitySold(), offer.getTotalQuantity()));
+
+		if (txnState == TransactionState.SKIP)
 		{
 			return;
 		}
 
-		// Exit here if the transaction is not in completed state
-		if (!Transaction.complete(newOfferEvent.getOffer()))
-		{
-			return;
-		}
+		transactionStateManager.updateConfig(slot, offer);
 
-		Transaction transaction = Transaction.fromOffer(newOfferEvent.getOffer());
+		Transaction transaction = Transaction.fromOffer(offer);
+		System.out.println(String.format("Slot: %s - %s %sx%s (%s)", slot, state.toString(), offer.getSpent(), offer.getQuantitySold(), offer.getTotalQuantity()));
+		System.out.println(transaction);
+		System.out.println(txnState.toString());
+		System.out.println("---");
 
-		System.out.println(String.format("Slot: %s - %s", newOfferEvent.getSlot(), newOfferEvent.getOffer().getState().toString()));
-
-		api.logTransaction(transaction);
+//		api.logTransaction(transaction);
 	}
 
 	/**

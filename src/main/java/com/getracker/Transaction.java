@@ -27,8 +27,8 @@ public class Transaction implements Serializable
 
 	public static Transaction fromOffer(GrandExchangeOffer offer)
 	{
-		GrandExchangeOfferState state = offer.getState();
-		boolean buying = state == GrandExchangeOfferState.BUYING || state == GrandExchangeOfferState.BOUGHT;
+		final GrandExchangeOfferState state = offer.getState();
+		final boolean buying = state == GrandExchangeOfferState.BUYING || state == GrandExchangeOfferState.BOUGHT;
 
 		return new Transaction(
 			offer.getItemId(),
@@ -37,12 +37,6 @@ public class Transaction implements Serializable
 			offer.getTotalQuantity(),
 			buying
 		);
-	}
-
-	private boolean buying(GrandExchangeOffer offer)
-	{
-		GrandExchangeOfferState state = offer.getState();
-		return state == GrandExchangeOfferState.BUYING || state == GrandExchangeOfferState.BOUGHT;
 	}
 
 	/**
