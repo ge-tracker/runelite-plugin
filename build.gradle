@@ -20,7 +20,7 @@ dependencies {
 
 	testImplementation 'junit:junit:4.12'
 	testImplementation 'org.slf4j:slf4j-simple:1.7.12'
-	testImplementation 'net.runelite:client:1.6.19'
+	testImplementation 'net.runelite:client:1.6.20'
 }
 
 group = 'com.getracker'

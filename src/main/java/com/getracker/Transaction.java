@@ -14,6 +14,7 @@ public class Transaction implements Serializable
 	private int price;
 	private int qty;
 	private boolean buying;
+	private TransactionWorldType worldType;
 
 	public static Transaction fromOffer(GrandExchangeOffer offer)
 	{

@@ -3,6 +3,7 @@ package com.getracker;
 import com.getracker.cerebro.CerebroApi;
 import com.getracker.cerebro.SessionManager;
 import com.google.inject.Provides;
+import java.util.EnumSet;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -85,9 +86,27 @@ public class GeTrackerIntegrationPlugin extends Plugin
 			Transaction transaction = Transaction.fromOffer(offer);
 			transaction.setQty(transactionStateManager.getQty());
 			transaction.setPrice(transactionStateManager.getDSpent() / transactionStateManager.getQty());
+			transaction.setWorldType(getGeWorldType());
 
 			api.logTransaction(transaction);
 		}
+	}
+
+	private TransactionWorldType getGeWorldType()
+	{
+		EnumSet<net.runelite.api.WorldType> worldTypes = client.getWorldType();
+
+		if (worldTypes.contains(net.runelite.api.WorldType.DEADMAN))
+		{
+			return TransactionWorldType.DEADMAN;
+		}
+
+		if (worldTypes.contains(net.runelite.api.WorldType.DEADMAN_TOURNAMENT))
+		{
+			return TransactionWorldType.DEADMAN_TOURNAMENT;
+		}
+
+		return TransactionWorldType.REGULAR;
 	}
 
 	/**

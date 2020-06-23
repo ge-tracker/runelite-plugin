@@ -17,11 +17,11 @@ import okhttp3.Response;
 @Slf4j
 public class CerebroApi
 {
-//	private final String API_URL = "https://staging-test.cerebrohub.io/api/";
-//	private final String CLIENT_ID = "61834a65-6326-486c-a7a5-ddadbb99005a";
+	private final String API_URL = "https://staging-test.cerebrohub.io/api/";
+	private final String CLIENT_ID = "61834a65-6326-486c-a7a5-ddadbb99005a";
 
-	private final String API_URL = "http://cerebro.local/api/";
-	private final String CLIENT_ID = "60e0ce7b-443c-4173-a17d-45f2be4148d9";
+//	private final String API_URL = "http://cerebro.local/api/";
+//	private final String CLIENT_ID = "60e0ce7b-443c-4173-a17d-45f2be4148d9";
 
 	private static final String CEREBRO_CLIENT = "X-CEREBRO-CLIENT-ID";
 	private static final String CEREBRO_SESSION = "X-CEREBRO-SESSION-ID";
@@ -52,8 +52,7 @@ public class CerebroApi
 		Request.Builder builder = new Request.Builder()
 			.header("Content-Type", "application/json")
 			.url(HttpUrl.parse(endpointUrl))
-			.header(CerebroApi.CEREBRO_CLIENT, CLIENT_ID)
-			.header("X-CLIENT-IP", "1.1.1.1");
+			.header(CerebroApi.CEREBRO_CLIENT, CLIENT_ID);
 
 		if (session != null)
 		{
