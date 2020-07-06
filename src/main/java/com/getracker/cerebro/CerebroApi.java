@@ -1,8 +1,10 @@
 package com.getracker.cerebro;
 
 import com.getracker.Transaction;
+import com.google.common.hash.Hashing;
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.http.api.RuneLiteAPI;
@@ -109,8 +111,11 @@ public class CerebroApi
 		this.makeApiRequest(method, endpoint, null);
 	}
 
+	@SuppressWarnings("UnstableApiUsage")
 	public void setRsn(String rsn)
 	{
-		this.rsn = Md5Hasher.hash(rsn);
+		this.rsn = Hashing.sha256()
+			.hashString(rsn, StandardCharsets.UTF_8)
+			.toString();
 	}
 }
